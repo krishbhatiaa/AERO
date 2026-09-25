@@ -1,0 +1,11 @@
+# Non-secret application defaults. Secrets and endpoints come from environment variables (.env).
+demo:
+  init_time: "2021-05-15T00:00:00Z"   # Real date: Cyclone Tauktae period
+  seed: 7
+  n_members: 10
+  lead_hours: [0, 6, 12, 18, 24, 30, 36, 42, 48]
+  extrapolation_hours: [54, 60, 66, 72]
+pipeline_version: "1.0.0"
+cyclone_like_signature:   # descriptive diagnostic only (NOT an operational cyclone classification)
+  max_msl_hpa: 1000.0     # closed low: minimum sea-level pressure at or below this (hPa)
+  min_wind_ms: 17.0       # and 10 m wind at or above this (m/s, ~34 kt)

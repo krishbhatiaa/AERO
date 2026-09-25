@@ -1,0 +1,13 @@
+# Canonical variable names, units and provenance of conversions.
+variables:
+  t2m:  { long_name: 2 m temperature,              units: K,      valid_range: [150.0, 350.0] }
+  tp:   { long_name: total precipitation (accumulated), units: mm, valid_range: [0.0, 2000.0] }
+  msl:  { long_name: mean sea level pressure,      units: Pa,     valid_range: [80000.0, 110000.0] }
+  u10:  { long_name: 10 m zonal wind,              units: "m s-1", valid_range: [-150.0, 150.0] }
+  v10:  { long_name: 10 m meridional wind,         units: "m s-1", valid_range: [-150.0, 150.0] }
+  z:    { long_name: geopotential height,          units: m,      valid_range: [-500.0, 60000.0] }
+  r:    { long_name: relative humidity,            units: "%",    valid_range: [0.0, 110.0] }
+  q:    { long_name: specific humidity,            units: "kg kg-1", valid_range: [0.0, 0.05] }
+  w:    { long_name: vertical velocity,            units: "Pa s-1", valid_range: [-50.0, 50.0] }
+  elevation: { long_name: surface elevation,       units: m,      valid_range: [-500.0, 9000.0] }
+  lsm:  { long_name: land fraction,                units: "1",    valid_range: [0.0, 1.0] }

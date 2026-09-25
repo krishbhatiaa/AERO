@@ -1,0 +1,6 @@
+source: IMDAA
+data_kind: REANALYSIS
+access: "Registration on the NCMRWF reanalysis data portal (researchers); see docs/data_acquisition.md"
+# variable_map is intentionally EMPTY: variable names/units of restricted products must be filled in by
+# a user who legitimately holds the files. The adapter reports NOT_CONFIGURED until this is populated.
+variable_map: {}

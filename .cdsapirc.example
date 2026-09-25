@@ -1,0 +1,7 @@
+# Copernicus Climate Data Store (CDS) API configuration
+# Copy this file to ~/.cdsapirc and fill in your personal access token.
+# Alternatively, set the CDSAPI_URL and CDSAPI_KEY environment variables.
+# See: https://cds.climate.copernicus.eu/how-to-api
+
+url: https://cds.climate.copernicus.eu/api
+key: your-personal-access-token-here

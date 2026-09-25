@@ -1,0 +1,42 @@
+# secrets and local config
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+.cdsapirc
+# python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.hypothesis/
+*.egg-info/
+htmlcov/
+.coverage
+# runtime data (never commit real weather data or audit logs)
+var/
+*.zarr/
+*.nc
+*.grib
+*.grib2
+*.grb
+*.grb2
+!sample_data/**/*.nc
+ne_cache/
+# models: keep cards and manifests, not weights
+models/*.pt
+models/*.pth
+models/*.safetensors
+models/*.ckpt
+# frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+# editors / OS
+.idea/
+.vscode/
+.DS_Store
+*.tsbuildinfo

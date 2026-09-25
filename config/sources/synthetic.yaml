@@ -1,0 +1,9 @@
+source: SYNTHETIC
+data_kind: SYNTHETIC_DEMO
+access: "Built-in synthetic scenario engine; no external data required"
+nominal_resolution_deg: 0.25
+variable_map:
+  tp: { canonical: tp, from_units: "mm/6h" }
+  msl: { canonical: msl, from_units: hPa }
+  u10: { canonical: u10, from_units: "m/s" }
+  v10: { canonical: v10, from_units: "m/s" }

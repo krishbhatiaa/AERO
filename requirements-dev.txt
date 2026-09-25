@@ -1,0 +1,9 @@
+-r requirements.txt
+pytest==9.1.1
+pytest-cov==7.1.0
+hypothesis==6.168.0
+moto==5.2.3
+metpy==1.7.1
+fakeredis==2.38.0
+psycopg-binary==3.3.6
+psycopg[binary]>=3.1

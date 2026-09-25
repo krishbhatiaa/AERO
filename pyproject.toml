@@ -1,0 +1,65 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "extreme-weather-ai"
+version = "0.1.0"
+description = "AI-driven spatio-temporal tracking of extreme weather anomalies (MoES / NCMRWF PS 26078)"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+dependencies = [
+  "numpy>=2.0",
+  "scipy>=1.13",
+  "xarray>=2024.6",
+  "dask>=2024.6",
+  "zarr>=3.0",
+  "netcdf4>=1.7",
+  "shapely>=2.0",
+  "pyproj>=3.6",
+  "pyyaml>=6.0",
+  "pydantic>=2.7",
+  "pydantic-settings>=2.3",
+  "fastapi>=0.115",
+  "uvicorn[standard]>=0.30",
+  "httpx>=0.27",
+]
+
+[project.optional-dependencies]
+s3 = ["boto3>=1.34", "s3fs>=2024.6"]
+redis = ["redis>=5.0"]
+era5 = ["cdsapi>=0.7.7"]
+grib = ["cfgrib>=0.9.14"]
+ml = ["torch>=2.3", "torch-geometric>=2.5"]
+db = ["psycopg[binary]>=3.1", "asyncpg>=0.30"]
+dev = [
+  "pytest>=8.0", "pytest-cov>=5.0", "hypothesis>=6.100", "moto[s3]>=5.0",
+  "boto3>=1.34", "metpy>=1.6", "fakeredis>=2.23", "ruff>=0.5", "mypy>=1.10", "websockets>=12.0",
+]
+
+[tool.setuptools.packages.find]
+include = ["ml*", "data_pipeline*", "backend*"]
+
+[tool.pytest.ini_options]
+pythonpath = [".", "backend"]
+testpaths = ["ml/tests", "data_pipeline/tests", "backend/tests"]
+addopts = "-q -ra"
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.ruff]
+line-length = 160
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "S", "SIM"]
+ignore = ["S101", "E501"]  # E501: long lines in data tables/prompts are intentional; no formatter is enforced
+
+[tool.ruff.lint.per-file-ignores]
+"**/tests/**" = ["S"]
+"backend/app/**" = ["B008"]  # FastAPI dependency-injection idiom: Depends()/Query() in argument defaults
+
+[tool.mypy]
+python_version = "3.12"
+ignore_missing_imports = true
+warn_unused_ignores = true

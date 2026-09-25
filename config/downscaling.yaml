@@ -1,0 +1,7 @@
+# Downscaling configuration. Resolution is metadata: change the grids, not the code.
+baseline_methods: [nearest, bilinear, bicubic, bicubic_conservative]
+refinement_factor: 2              # demo grids: 0.1 deg (~11 km) -> 0.05 deg (~5.5 km)
+evaluation:
+  extreme_quantile: 0.99
+  spectral_band_km: [12.0, 40.0]  # wavelength band used for the PSD ratio
+  iou_threshold_mm: 50.0

@@ -1,0 +1,19 @@
+# Anomaly-detection configuration - Calibrated for Indian extreme weather.
+# Thresholds are based on standard meteorological practice for Indian monsoon region.
+detectors:
+  zscore:
+    moderate: 2.0        # |z| >= 2  (~top 2.3% of a NORMAL distribution)
+    extreme: 3.0         # |z| >= 3  (~0.13% of a normal distribution)
+    sigma_floor: 1.0e-6  # avoids division by ~0 where climatological variance vanishes
+  percentile:
+    moderate: 0.95       # exceeds climatological P95
+    extreme: 0.99        # exceeds climatological P99
+  efi_style:
+    moderate: 0.5        # rule-of-thumb magnitudes used with ECMWF EFI
+    extreme: 0.8
+    n_theta: 64          # quadrature nodes for the EFI integral
+climatology:
+  period: [1991, 2020]   # WMO standard 30-year climatology period
+  doy_window_days: 7     # pool +/- N calendar days around the target day-of-year
+  min_samples: 100
+  quantile_levels_step: 0.01

@@ -1,0 +1,20 @@
+# DVC Pipeline configuration for Extreme Weather AI
+stages:
+  ingest_era5:
+    cmd: python scripts/generate_sample_era5.py
+    deps:
+      - scripts/generate_sample_era5.py
+    outs:
+      - var/data/raw/era5/era5_sample_event.nc:
+          cache: true
+
+  train_models:
+    cmd: python scripts/train_all_models.py
+    deps:
+      - scripts/train_all_models.py
+      - var/data/raw/era5/era5_sample_event.nc
+    outs:
+      - models/checkpoints:
+          cache: true
+      - models/registry.json:
+          cache: false

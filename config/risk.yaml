@@ -1,0 +1,23 @@
+# RiskEngine configuration - Calibrated for Indian extreme weather (IMD criteria).
+# These categories are ANALYTICAL decision-support categories. They are NOT official IMD/NDMA warning
+# colours or categories. Thresholds are calibrated against IMD extreme rainfall criteria.
+disclaimer: >-
+  Analytical decision-support output from a research prototype. Not an official warning. Consult the
+  India Meteorological Department (IMD) and State/District Disaster Management Authorities for official
+  warnings.
+weights: { intensity: 0.45, area: 0.25, duration: 0.30 }
+probability_exponent: 1.0          # risk = probability^gamma * hazard
+category_thresholds: { moderate: 0.25, severe: 0.55 }   # on the composite risk score in [0, 1]
+scales:                            # piecewise-linear 0 -> 1 between lo and hi
+  EXTREME_RAINFALL:
+    # IMD extreme rainfall thresholds (mm/day): Very heavy > 124.5, Extremely heavy > 244.5
+    # Converted to 6-hourly: /4 -> 31.1 and 61.1 mm/6h
+    # Lo = very heavy rainfall onset, Hi = extremely heavy rainfall
+    intensity: { lo: 31.1, hi: 120.0, unit: "mm/6h" }
+    # Large-scale extreme rainfall events cover 500-50000 km2 in Indian context
+    area_km2: { lo: 500.0, hi: 50000.0 }
+    # Cyclonic systems can produce extreme rainfall for 6-72 hours
+    duration_h: { lo: 6.0, hi: 72.0 }
+confidence:                        # documented thresholds for the HIGH/MEDIUM/LOW confidence class
+  high:   { min_member_agreement: 0.8, max_uncertainty_radius_km: 60.0 }
+  medium: { min_member_agreement: 0.5, max_uncertainty_radius_km: 150.0 }

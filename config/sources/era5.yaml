@@ -1,0 +1,11 @@
+source: ERA5
+data_kind: REANALYSIS
+access: "Free CDS account + personal access token (see docs/data_acquisition.md)"
+nominal_resolution_deg: 0.25
+# ERA5 short name -> canonical name (+ conversion applied by the adapter)
+variable_map:
+  t2m: { canonical: t2m, from_units: K }
+  tp:  { canonical: tp,  from_units: m, note: "metres of water per accumulation period; x1000 -> mm" }
+  msl: { canonical: msl, from_units: Pa }
+  u10: { canonical: u10, from_units: "m s-1" }
+  v10: { canonical: v10, from_units: "m s-1" }

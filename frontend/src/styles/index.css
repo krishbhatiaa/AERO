@@ -1,0 +1,50 @@
+@import "./tokens.css";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --map-sea: 205 229 255;
+  --map-land: 255 255 255;
+  /* Severity: colour is never the only signal (icon + label + pattern are always shown too). */
+  --sev-low: 71 85 105;
+  --sev-moderate: 161 98 7;
+  --sev-severe: 185 28 28;
+}
+[data-theme="dark"] {
+  --map-sea: 14 32 48;
+  --map-land: 30 38 52;
+  --sev-low: 148 163 184;
+  --sev-moderate: 250 204 21;
+  --sev-severe: 248 113 113;
+}
+
+@layer base {
+  html, body, #root { height: 100%; }
+  body {
+    margin: 0;
+    background: rgb(var(--c-background));
+    color: rgb(var(--c-on-surface));
+    font-family: theme("fontFamily.sans");
+    font-size: 13px;
+    line-height: 18px;
+    overscroll-behavior: none;
+    -webkit-font-smoothing: antialiased;
+  }
+  :focus-visible { outline: 2px solid rgb(var(--c-primary)); outline-offset: 2px; border-radius: 3px; }
+  ::selection { background: rgb(var(--c-primary-container) / 0.35); }
+  * { scrollbar-width: thin; scrollbar-color: rgb(var(--c-outline-variant)) transparent; }
+}
+
+@layer components {
+  .skeleton { position: relative; overflow: hidden; background: rgb(var(--c-surface-container)); border-radius: 4px; }
+  .skeleton::after { content: ""; position: absolute; inset: 0; transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, rgb(var(--c-surface-container-highest) / 0.7), transparent); animation: shimmer 1.6s infinite; }
+  .grid-bg { background-image: linear-gradient(rgb(var(--c-outline-variant) / 0.25) 1px, transparent 1px), linear-gradient(90deg, rgb(var(--c-outline-variant) / 0.25) 1px, transparent 1px); background-size: 32px 32px; }
+  .glass { background: rgb(var(--c-surface-container-lowest) / 0.9); backdrop-filter: blur(6px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; scroll-behavior: auto !important; }
+  .skeleton::after { display: none; }
+}

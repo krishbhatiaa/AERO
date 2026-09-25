@@ -1,0 +1,22 @@
+# Runtime dependencies, pinned to the versions the test-suite was run with (Python 3.12).
+# uvicorn[standard] extras (uvloop/httptools) are optional and omitted for portability.
+numpy==2.4.4
+scipy==1.17.1
+xarray==2026.7.0
+dask==2026.8.0
+zarr==3.4.0
+netcdf4==1.7.4
+shapely==2.1.2
+pyproj==3.8.0
+pyyaml==6.0.3
+pydantic==2.13.5
+pydantic-settings==2.15.0
+fastapi==0.141.1
+uvicorn==0.53.0
+httpx==0.28.1
+websockets==17.1
+boto3==1.43.98
+redis==8.1.0
+PyJWT==2.10.1
+cryptography==44.0.0
+python-multipart>=0.0.9

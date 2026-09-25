@@ -1,0 +1,16 @@
+# Tracking configuration (baseline tracker: overlap + distance + intensity, Hungarian, Kalman).
+extraction:
+  min_area_km2: 2000.0    # regions smaller than this are rejected as noise (counted in diagnostics, not silent)
+  closing_iterations: 1   # fills 1-cell holes inside a region
+  opening_iterations: 0
+  connectivity: 8
+association:
+  weights: { distance: 0.5, overlap: 0.3, intensity: 0.2 }
+  gate_km: 300.0          # maximum centroid jump between consecutive frames
+  max_cost: 1.0           # assignments costlier than this are rejected
+  max_missed: 1           # frames a track may coast without a detection
+  split_overlap_iou: 0.05
+kalman:
+  sigma_meas_km: 12.0     # centroid measurement noise (about one 12 km cell)
+  sigma_accel_kmh2: 1.5   # white-noise acceleration spectral density
+  sigma_v0_kmh: 30.0      # prior velocity uncertainty for new tracks
