@@ -36,7 +36,7 @@ CAPABILITIES: list[dict[str, Any]] = [
     {"id": "globe3d", "name": "3D globe visualization", "status": IMPLEMENTED, "detail": "Canvas2D interactive globe with orbital rotation, zoom, anomaly heatmap, event pulse markers, lat/lon grid"},
     {"id": "file_uploads", "name": "File upload endpoint", "status": IMPLEMENTED, "detail": "POST /api/v1/uploads with magic-byte validation, size limits, format detection"},
     {"id": "prometheus_metrics", "name": "Prometheus observability /metrics", "status": IMPLEMENTED, "detail": "request counters, latency histograms, active jobs/alerts gauges, model inference counters"},
-    {"id": "mlflow_tracking", "name": "MLflow experiment tracking", "status": IMPLEMENTED, "detail": "MLflowTracker with remote server + local JSON fallback; API key configured"},
+    {"id": "mlflow_tracking", "name": "MLflow experiment tracking", "status": IMPLEMENTED, "detail": "MLflowTracker with remote server + local JSON fallback; token from MLFLOW_TRACKING_TOKEN env var"},
     {"id": "dvc_versioning", "name": "DVC dataset versioning", "status": IMPLEMENTED, "detail": "SHA-256 integrity hashes, .dvc records, dvc.yaml pipeline config"},
     {"id": "real_validation", "name": "Validation on real events", "status": NEEDS_DATA, "detail": "no real-data skill has been measured"},
 ]

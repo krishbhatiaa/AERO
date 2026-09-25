@@ -15,7 +15,7 @@
         "extreme_recall": 0.88,
         "precision": 0.81
       },
-      "checkpoint_path": "C:\\Users\\Admin\\Desktop\\extreme-weather-ai\\extreme-weather-ai\\models\\checkpoints\\unet_downscaler_v1.pt",
+      "checkpoint_path": "models/checkpoints/unet_downscaler_v1.pt",
       "checkpoint_sha256": "01d8e8db5e1b23237eb4949808b3c014b0c2db5dcae32c31d32e418601b6f972",
       "input_schema": {},
       "output_schema": {},
@@ -53,7 +53,7 @@
         "extreme_recall": 0.91,
         "precision": 0.85
       },
-      "checkpoint_path": "C:\\Users\\Admin\\Desktop\\extreme-weather-ai\\extreme-weather-ai\\models\\checkpoints\\diffusion_downscaler_v1.pt",
+      "checkpoint_path": "models/checkpoints/diffusion_downscaler_v1.pt",
       "checkpoint_sha256": "a70444475d4867a0453fb37bccc6568aa94d4a10ef09fbc6b19c8d41f33a0435",
       "input_schema": {},
       "output_schema": {},
@@ -89,7 +89,7 @@
         "track_continuity": 0.95,
         "displacement_km": 15.0
       },
-      "checkpoint_path": "C:\\Users\\Admin\\Desktop\\extreme-weather-ai\\extreme-weather-ai\\models\\checkpoints\\gnn_tracker_v1.pt",
+      "checkpoint_path": "models/checkpoints/gnn_tracker_v1.pt",
       "checkpoint_sha256": "0986c70a66f447de1ae89f7cd2ec0936f31ef82ce0a713d7e96ca6b103d5dc74",
       "input_schema": {},
       "output_schema": {},

@@ -7,3 +7,6 @@ rule-based risk engine) and has `parameters = 0`, `checkpoint = null` in the reg
 When learned models are trained (see `Batchsize.md`), this folder will hold **model cards and manifests** (dataset, period,
 seed, hyper-parameters, metrics, checkpoint SHA-256). Weights themselves are git-ignored and belong in object storage /
 Git LFS, and are loaded only with `safetensors` or `torch.load(weights_only=True)`.
+
+Checkpoint weights are a generated artifact: regenerate them locally with `python scripts/train_all_models.py`,
+which writes `checkpoints/*.pt` and records repo-relative paths + SHA-256 in `registry.json`.

@@ -46,12 +46,17 @@ validation on real events · Docker images were written but **not executed** in 
 ## Quick start
 
 ```bash
-git clone <your-fork> && cd extreme-weather-ai
+git clone https://github.com/krishbhatiaa/AERO.git && cd AERO
 make install install-frontend            # Python 3.12+, Node 22+
 make demo                                # whole chain on the synthetic scenario, prints a summary (~5 s, CPU only)
 make dev-backend                         # terminal 1: API on :8000
 make dev-frontend                        # terminal 2: dashboard on :5173
 ```
+
+**Configuration & secrets:** copy `.env.example` to `.env` and fill in only what you need. Real credentials
+(CDS/ERA5 token, MLflow token, database/S3 passwords) belong in your local `.env` or your secret manager —
+`.env` and `.cdsapirc` are git-ignored and no default secret is baked into the code. Validate a clean checkout
+for leaks with the same scan CI runs: `gitleaks detect --source .`.
 
 See [`QUICKSTART.md`](QUICKSTART.md) for Docker, PostGIS seeding and real-data instructions.
 

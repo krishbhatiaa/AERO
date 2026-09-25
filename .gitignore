@@ -1,22 +1,32 @@
-# secrets and local config
+# secrets and local config — never commit real credentials
 .env
 .env.*
 !.env.example
 *.pem
 *.key
+*.p12
+*.pfx
+.secrets
+*.secret
 .cdsapirc
+
 # python
 __pycache__/
 *.py[cod]
 .venv/
+venv/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
 .hypothesis/
 *.egg-info/
+dist/
+build/
 htmlcov/
 .coverage
-# runtime data (never commit real weather data or audit logs)
+.coverage.*
+
+# runtime data (never commit real weather data, logs or audit trails)
 var/
 *.zarr/
 *.nc
@@ -26,17 +36,33 @@ var/
 *.grb2
 !sample_data/**/*.nc
 ne_cache/
-# models: keep cards and manifests, not weights
-models/*.pt
-models/*.pth
-models/*.safetensors
-models/*.ckpt
+mlruns/
+*.log
+*.sqlite
+*.sqlite3
+*.db
+
+# models: keep cards and manifests, not weights (regenerate with scripts/train_all_models.py)
+models/**/*.pt
+models/**/*.pth
+models/**/*.ckpt
+models/**/*.safetensors
+models/**/*.onnx
+models/**/*.pkl
+
+# data versioning caches
+.dvc/cache/
+.dvc/tmp/
+
 # frontend
 frontend/node_modules/
 frontend/dist/
 frontend/.vite/
+node_modules/
+
 # editors / OS
 .idea/
 .vscode/
 .DS_Store
+Thumbs.db
 *.tsbuildinfo

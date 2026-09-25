@@ -6,12 +6,25 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
 from datetime import UTC, datetime
 from enum import StrEnum
 from pathlib import Path
 from typing import Any
 
+log = logging.getLogger(__name__)
+
 _REGISTRY_PATH = Path(__file__).resolve().parents[2] / "models" / "registry.json"
+_REPO_ROOT = _REGISTRY_PATH.parents[1]
+
+
+def _portable_path(path: str | Path) -> str:
+    """Repo-relative POSIX path when the file lives inside the repository (keeps registry.json machine-independent)."""
+    p = Path(path)
+    try:
+        return p.resolve().relative_to(_REPO_ROOT).as_posix()
+    except ValueError:
+        return str(path)
 
 
 class ModelStatus(StrEnum):
@@ -99,7 +112,7 @@ def register_model(
         "training_period": list(training_period) if training_period else [],
         "validation_period": list(validation_period) if validation_period else [],
         "metrics": metrics or {},
-        "checkpoint_path": str(checkpoint_path) if checkpoint_path else "",
+        "checkpoint_path": _portable_path(checkpoint_path) if checkpoint_path else "",
         "checkpoint_sha256": checkpoint_sha,
         "input_schema": input_schema or {},
         "output_schema": output_schema or {},
@@ -194,7 +207,12 @@ def load_model_checkpoint(name: str, version: str) -> dict[str, Any] | None:
     record = get_model(name, version)
     if record is None:
         return None
-    ckpt_path = Path(record.get("checkpoint_path", ""))
+    raw = record.get("checkpoint_path", "")
+    if not raw:
+        return None
+    ckpt_path = Path(raw)
+    if not ckpt_path.is_absolute():
+        ckpt_path = _REPO_ROOT / ckpt_path
     if not ckpt_path.exists():
         return None
     try:

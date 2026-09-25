@@ -14,15 +14,13 @@ from typing import Any
 
 log = logging.getLogger(__name__)
 
-API_KEY_TOKEN = "8213bb79-aa4d-4ce4-a5f9-74efd87b6e45"
-
 
 class MLflowTracker:
     """Experiment tracker wrapping MLflow with fallback local JSON logging."""
 
     def __init__(self, experiment_name: str = "extreme-weather-ai") -> None:
         self.experiment_name = experiment_name
-        self.token = os.environ.get("MLFLOW_TRACKING_TOKEN", API_KEY_TOKEN)
+        self.token = os.environ.get("MLFLOW_TRACKING_TOKEN", "")
         self.tracking_uri = os.environ.get("MLFLOW_TRACKING_URI", "./var/mlruns")
         self.has_mlflow = False
 
@@ -54,7 +52,7 @@ class MLflowTracker:
                 with mlflow.start_run(run_name=run_name) as run:
                     mlflow.log_params(params)
                     mlflow.log_metrics(metrics)
-                    mlflow.set_tag("api_key", self.token[:8] + "...")
+                    mlflow.set_tag("mlflow_token_configured", bool(self.token))
                     if notes:
                         mlflow.set_tag("notes", notes)
                     if artifacts:
@@ -70,7 +68,7 @@ class MLflowTracker:
             "run_id": run_id,
             "run_name": run_name,
             "experiment_name": self.experiment_name,
-            "token_sha256": self.token[:8] + "...",
+            "mlflow_token_configured": bool(self.token),
             "timestamp": datetime.now(UTC).isoformat(),
             "params": params,
             "metrics": metrics,

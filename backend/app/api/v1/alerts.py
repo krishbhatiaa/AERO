@@ -5,12 +5,13 @@ from typing import Annotated, Any
 
 from app.api.v1.events import get_store
 from app.core.errors import ApiError
-from app.core.security import get_principal
+from app.core.security import get_principal, require_role
 from app.schemas.common import SEVERITY_ORDER, PageParams, envelope, page_params, paginate
 from app.services.alerts import alert_geojson
 from app.services.dissemination import dissemination_service
 from fastapi import APIRouter, Body, Depends, Query, Request, Response
 from fastapi.responses import JSONResponse
+
 from ml.risk.cap_xml import export_cap_xml, export_cap_xml_feed
 
 router = APIRouter(prefix="/alerts", tags=["alerts"], dependencies=[Depends(get_principal)])
@@ -89,25 +90,32 @@ async def disseminate_alert_endpoint(request: Request, alert_id: str) -> dict[st
     return envelope(result)
 
 
-@router.get("/subscriptions/list")
+@router.get("/subscriptions/list", dependencies=[Depends(require_role("admin"))])
 async def list_dissemination_subscriptions() -> dict[str, Any]:
-    """List all registered dissemination webhook/email subscriptions."""
+    """List registered dissemination subscriptions (signing secrets are redacted)."""
     return envelope(dissemination_service.list_subscriptions())
 
 
-@router.post("/subscriptions")
+@router.post("/subscriptions", dependencies=[Depends(require_role("admin"))])
 async def add_dissemination_subscription(
     channel_type: Annotated[str, Body(embed=True)],
     target: Annotated[str, Body(embed=True)],
     secret: Annotated[str, Body(embed=True)] = "",
     severities: Annotated[list[str] | None, Body(embed=True)] = None,
 ) -> dict[str, Any]:
-    """Register a new webhook URL or email endpoint for automated alert dissemination."""
+    """Register a new webhook URL or email endpoint for automated alert dissemination.
+
+    When ``secret`` is omitted a random HMAC signing secret is generated and returned
+    exactly once in this response; it is never returned by the list endpoint.
+    """
     sub = dissemination_service.add_subscription(channel_type, target, secret, severities)
-    return envelope({
+    payload: dict[str, Any] = {
         "id": sub.id,
         "channel_type": sub.channel_type,
         "target": sub.target,
         "severities": sub.severities,
         "status": "active",
-    })
+    }
+    if not secret:
+        payload["secret"] = sub.secret
+    return envelope(payload)

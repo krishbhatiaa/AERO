@@ -9,7 +9,9 @@ import hashlib
 import hmac
 import json
 import logging
-from dataclasses import asdict, dataclass, field
+import os
+import secrets
+from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import Any
 
@@ -33,8 +35,11 @@ class DisseminationService:
 
     def __init__(self) -> None:
         self.subscriptions: dict[str, Subscription] = {}
-        # Pre-seed sample default webhook subscription
-        self.add_subscription("webhook", "http://localhost:8080/api/v1/webhook-receiver", secret="ewai_secret_key_2026")
+        # Pre-seed a demo webhook subscription. The signing secret comes from
+        # WEBHOOK_SIGNING_SECRET when configured, otherwise a random per-process
+        # value — never a hard-coded credential committed to the repository.
+        demo_secret = os.environ.get("WEBHOOK_SIGNING_SECRET", "").strip() or secrets.token_urlsafe(32)
+        self.add_subscription("webhook", "http://localhost:8080/api/v1/webhook-receiver", secret=demo_secret)
 
     def add_subscription(self, channel_type: str, target: str, secret: str = "", severities: list[str] | None = None) -> Subscription:
         import uuid
@@ -43,7 +48,7 @@ class DisseminationService:
             id=sub_id,
             channel_type=channel_type,
             target=target,
-            secret=secret,
+            secret=secret or secrets.token_urlsafe(32),
             severities=severities or ["SEVERE", "MODERATE"],
         )
         self.subscriptions[sub_id] = sub
@@ -51,7 +56,18 @@ class DisseminationService:
         return sub
 
     def list_subscriptions(self) -> list[dict[str, Any]]:
-        return [asdict(sub) for sub in self.subscriptions.values()]
+        """Public view of subscriptions; signing secrets are never returned here."""
+        return [
+            {
+                "id": sub.id,
+                "channel_type": sub.channel_type,
+                "target": sub.target,
+                "severities": sub.severities,
+                "created_at": sub.created_at,
+                "has_secret": bool(sub.secret),
+            }
+            for sub in self.subscriptions.values()
+        ]
 
     async def disseminate_alert(self, alert: dict[str, Any]) -> dict[str, Any]:
         """Dispatch alert to all matching subscribers."""
