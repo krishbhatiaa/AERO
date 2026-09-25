@@ -6,14 +6,16 @@ The test DROPS and recreates the public schema of that database.
 """
 from __future__ import annotations
 
-import json
 import os
 import uuid
-from datetime import UTC, datetime
 from pathlib import Path
 
-import asyncpg
 import pytest
+
+asyncpg = pytest.importorskip(
+    "asyncpg",
+    reason="asyncpg not installed; repository integration tests need the asyncpg driver",
+)
 
 pytestmark = pytest.mark.skipif(
     not os.environ.get("EWAI_TEST_DATABASE_URL", ""),
