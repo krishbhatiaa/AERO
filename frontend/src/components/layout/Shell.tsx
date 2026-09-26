@@ -1,7 +1,7 @@
 import * as Tooltip from "@radix-ui/react-tooltip";
 import {
-  Activity, AlertTriangle, BarChart3, Calendar, Cloud, Database, Globe,
-  LayoutDashboard, LogOut, Menu, Moon, Settings, Shield, Sun, X,
+  Activity, AlertTriangle, BarChart3, Calendar, Cloud, Database, FlaskConical, Globe,
+  LayoutDashboard, LogOut, Menu, Moon, RefreshCw, Settings, Shield, Sun, X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
@@ -12,6 +12,8 @@ import { useAuth } from "@/stores/auth";
 import { useUi } from "@/stores/ui";
 import { cn } from "@/lib/utils";
 import Language from "@/components/Language";
+import { apiPost } from "@/lib/api";
+import { useQueryClient } from "@tanstack/react-query";
 
 const NAV_ITEMS = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, end: true },
@@ -58,6 +60,24 @@ export function Shell(): JSX.Element {
   const handleLogout = () => {
     logout();
     navigate("/login", { replace: true });
+  };
+
+  const qc = useQueryClient();
+  const [simSwitching, setSimSwitching] = useState(false);
+  const currentSim = health.data?.mode?.data_kind_in_use === "REANALYSIS" ? "2" : "1";
+
+  const handleSimSwitch = async (sim: "1" | "2") => {
+    if (simSwitching) return;
+    setSimSwitching(true);
+    try {
+      await apiPost("/mode/switch", { simulation: sim });
+      // Invalidate all queries so the UI refreshes with new data
+      await qc.invalidateQueries();
+    } catch (e) {
+      console.error("Mode switch failed", e);
+    } finally {
+      setSimSwitching(false);
+    }
   };
 
   // Close mobile sidebar on route change
@@ -286,6 +306,58 @@ export function Shell(): JSX.Element {
               <div className="hidden items-center gap-2 text-xs text-on-surface-variant md:flex">
                 <span className="font-mono">SOURCE</span>
                 <span className="rounded bg-surface-container px-1.5 py-0.5 font-mono text-[10px]">{health.data?.mode?.data_kind_in_use || "SYNTHETIC_DEMO"}</span>
+              </div>
+
+              {/* Simulation Toggle */}
+              <div className="hidden items-center gap-1.5 md:flex">
+                <Tooltip.Root>
+                  <Tooltip.Trigger asChild>
+                    <button
+                      id="sim-toggle-1"
+                      type="button"
+                      disabled={simSwitching}
+                      onClick={() => handleSimSwitch("1")}
+                      className={cn(
+                        "flex items-center gap-1.5 rounded-l-lg border border-r-0 border-outline-variant/60 px-2.5 py-1.5 text-[11px] font-bold font-mono transition",
+                        currentSim === "1"
+                          ? "bg-amber-500/20 text-amber-600 dark:text-amber-300 border-amber-500/40"
+                          : "bg-surface-container text-on-surface-variant hover:bg-surface-container-high"
+                      )}
+                    >
+                      <FlaskConical className="h-3 w-3" />
+                      SIM 1
+                    </button>
+                  </Tooltip.Trigger>
+                  <Tooltip.Portal>
+                    <Tooltip.Content side="bottom" className="z-50 rounded bg-surface-container-highest px-2 py-1 text-xs shadow-md">
+                      Simulation 1 – Synthetic Demo (hardcoded cyclone scenario)
+                    </Tooltip.Content>
+                  </Tooltip.Portal>
+                </Tooltip.Root>
+                <Tooltip.Root>
+                  <Tooltip.Trigger asChild>
+                    <button
+                      id="sim-toggle-2"
+                      type="button"
+                      disabled={simSwitching}
+                      onClick={() => handleSimSwitch("2")}
+                      className={cn(
+                        "flex items-center gap-1.5 rounded-r-lg border border-outline-variant/60 px-2.5 py-1.5 text-[11px] font-bold font-mono transition",
+                        currentSim === "2"
+                          ? "bg-cyan-500/20 text-cyan-600 dark:text-cyan-300 border-cyan-500/40"
+                          : "bg-surface-container text-on-surface-variant hover:bg-surface-container-high"
+                      )}
+                    >
+                      {simSwitching ? <RefreshCw className="h-3 w-3 animate-spin" /> : null}
+                      SIM 2
+                    </button>
+                  </Tooltip.Trigger>
+                  <Tooltip.Portal>
+                    <Tooltip.Content side="bottom" className="z-50 rounded bg-surface-container-highest px-2 py-1 text-xs shadow-md">
+                      Simulation 2 – ERA5 Reanalysis (real May 2021 data)
+                    </Tooltip.Content>
+                  </Tooltip.Portal>
+                </Tooltip.Root>
               </div>
             </div>
 

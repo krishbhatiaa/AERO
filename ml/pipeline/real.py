@@ -149,7 +149,31 @@ def _load_era5_dataset(data_path: Path) -> xr.Dataset:
             "  python scripts/ingest_era5.py --input var/data/raw/era5/event.nc"
         )
     log.info("loading ERA5 from NetCDF files", extra={"n_files": len(nc_files)})
-    return xr.open_mfdataset(nc_files, engine="netcdf4", combine="by_coords", chunks={})
+    # Sort by file length (descending) so the fullest date range loads first.
+    nc_files_sorted = sorted(nc_files, key=lambda f: f.stat().st_size, reverse=True)
+    datasets = [xr.open_dataset(f, engine="netcdf4", chunks={}) for f in nc_files_sorted]
+    if len(datasets) == 1:
+        return datasets[0]
+    # Normalise time dimension name across all files
+    normalised = []
+    for ds in datasets:
+        if "valid_time" in ds.dims:
+            normalised.append(ds)
+        elif "time" in ds.dims:
+            normalised.append(ds.rename({"time": "valid_time"}))
+        else:
+            normalised.append(ds)
+    # Concatenate along valid_time then deduplicate repeated timestamps by keeping first occurrence
+    try:
+        merged = xr.concat(normalised, dim="valid_time", coords="minimal", data_vars="minimal", compat="override")
+        _, unique_idx = np.unique(merged.coords["valid_time"].values, return_index=True)
+        merged = merged.isel(valid_time=unique_idx)
+        # Sort time axis to ensure monotonic order
+        merged = merged.sortby("valid_time")
+        return merged
+    except Exception as merge_err:
+        log.warning("multi-file merge failed, falling back to largest file", extra={"error": str(merge_err)})
+        return normalised[0]
 
 
 def _era5_to_gridspec(ds: xr.Dataset) -> GridSpec:

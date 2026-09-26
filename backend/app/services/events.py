@@ -93,7 +93,22 @@ def event_summary(result: DemoResult, track: Track) -> dict[str, Any]:
     obs = track.observed_points
     env = result.envelopes[pk_i] if hasattr(result, "envelopes") and len(result.envelopes) > pk_i else None
     unc = env.radius_km_p90 if env else pk.uncertainty_radius_km
-    agreement = result.member_agreement[pk_i] if hasattr(result, "member_agreement") and len(result.member_agreement) > pk_i else 0.85
+    # Intensity-weighted agreement across all track points for meaningful probability
+    if hasattr(result, "member_agreement") and result.member_agreement and hasattr(result, "lead_hours") and result.lead_hours:
+        total_w, total_wv = 0.0, 0.0
+        for p in track.observed_points:
+            lead = int(p.time_h)
+            if lead in result.lead_hours:
+                _i = result.lead_hours.index(lead)
+            else:
+                _i = min(range(len(result.lead_hours)), key=lambda ii: abs(result.lead_hours[ii] - lead))
+            agr = result.member_agreement[_i] if _i < len(result.member_agreement) else 0.0
+            w = float(p.max_intensity or 1.0)
+            total_w += w
+            total_wv += agr * w
+        agreement = max(total_wv / total_w, 0.15) if total_w > 0 else 0.5
+    else:
+        agreement = result.member_agreement[pk_i] if hasattr(result, "member_agreement") and len(result.member_agreement) > pk_i else 0.85
     conf = confidence_class(agreement, unc)
     sig = cyclone_signature(result, int(pk.time_h))
     return {

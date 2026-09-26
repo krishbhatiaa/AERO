@@ -35,6 +35,7 @@ from data_pipeline.storage.factory import storage_from_env
 from ml.pipeline.real import RealResult, run_real_pipeline
 
 log = logging.getLogger("app")
+# Pipeline reload trigger
 _SAFE_REQUEST_ID = 64
 
 
