@@ -93,6 +93,9 @@ def main() -> int:
         if "time" in ds.coords:
             t = ds["time"].values
             print(f"time range: {t[0]} to {t[-1]}")
+        elif "valid_time" in ds.coords:
+            t = ds["valid_time"].values
+            print(f"time range: {t[0]} to {t[-1]}")
         if "latitude" in ds.coords:
             print(f"latitude: {float(ds.latitude.min())} to {float(ds.latitude.max())}")
         if "longitude" in ds.coords:

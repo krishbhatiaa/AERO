@@ -14,7 +14,7 @@ APP_VERSION = "0.1.0"
 class Settings(BaseSettings):
     """Runtime configuration (see ``.env.example`` for every variable)."""
 
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore", case_sensitive=False)
+    model_config = SettingsConfigDict(env_file=(".env", "../.env"), extra="ignore", case_sensitive=False)
 
     env: Literal["development", "test", "production"] = "development"
     demo_mode: bool = True

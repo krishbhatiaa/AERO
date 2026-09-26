@@ -77,6 +77,10 @@ class DemoResult:
     def lead_hours(self) -> list[int]:
         return self.scenario.lead_hours
 
+    @property
+    def coarse_grid(self):
+        return getattr(self.scenario, "coarse_grid", None)
+
 
 def _detect(det: PercentileDetector, field: np.ndarray, clim: Climatology, grid, ec: ExtractionConfig):
     score = det.score(field, clim)

@@ -2,7 +2,15 @@ import { Hand, LocateFixed, Ruler } from "lucide-react";
 
 import { ControlButton } from "@/components/ControlButton";
 import { cn } from "@/lib/utils";
-import { useUi, type Layers, type SingleSource, type Tool } from "@/stores/ui";
+import { useUi, type Basemap, type Layers, type SingleSource, type Tool } from "@/stores/ui";
+
+const BASEMAPS: { id: Basemap; label: string; icon: string; desc: string }[] = [
+  { id: "standard", label: "Standard", icon: "🗺️", desc: "Vector map" },
+  { id: "satellite", label: "Satellite", icon: "🛰️", desc: "Earth orbital" },
+  { id: "terrain", label: "Terrain", icon: "🏔️", desc: "Topographic" },
+  { id: "dark", label: "Dark Radar", icon: "🌙", desc: "Night ops" },
+  { id: "nautical", label: "Nautical", icon: "⚓", desc: "Marine sea" },
+];
 
 const LAYERS: { key: keyof Layers; label: string; hint: string }[] = [
   { key: "precip", label: "Precipitation raster", hint: "6-hourly accumulation (mm)" },
@@ -23,10 +31,39 @@ const TOOLS: { tool: Tool; label: string; icon: typeof Hand; tip: string }[] = [
 ];
 
 export function LayerPanel(): JSX.Element {
-  const { layers, toggleLayer, tool, setTool, compare, setCompare, single, setSingle } = useUi();
+  const { layers, toggleLayer, tool, setTool, compare, setCompare, single, setSingle, basemap, setBasemap } = useUi();
   const active = Object.values(layers).filter(Boolean).length;
   return (
     <div className="flex h-full flex-col bg-surface-container-lowest">
+      {/* Basemap Switcher */}
+      <div className="border-b border-outline-variant/30 bg-surface-container-low/40 p-2.5">
+        <div className="mb-2 flex items-center justify-between text-label-header uppercase text-on-surface-variant">
+          <span className="font-bold tracking-wider">Map Style</span>
+          <span className="font-mono text-primary text-[10px] uppercase font-bold">{basemap}</span>
+        </div>
+        <div className="grid grid-cols-5 gap-1" role="radiogroup" aria-label="Map style">
+          {BASEMAPS.map((b) => (
+            <button
+              key={b.id}
+              type="button"
+              role="radio"
+              aria-checked={basemap === b.id}
+              onClick={() => setBasemap(b.id)}
+              title={`${b.label}: ${b.desc}`}
+              className={cn(
+                "flex flex-col items-center justify-center p-1.5 rounded-lg border text-center transition-all",
+                basemap === b.id
+                  ? "border-primary bg-primary/10 text-primary font-bold shadow-xs scale-102"
+                  : "border-outline-variant/40 bg-surface-container-lowest hover:bg-surface-container text-on-surface-variant hover:text-on-surface"
+              )}
+            >
+              <span className="text-sm leading-none mb-1">{b.icon}</span>
+              <span className="text-[9px] font-medium leading-tight truncate w-full">{b.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="border-b border-outline-variant/30 bg-surface-container-low p-2">
         <div className="mb-1 text-label-header uppercase text-on-surface-variant">Tool dock</div>
         <div className="flex flex-wrap gap-1" role="group" aria-label="Map tools">

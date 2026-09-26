@@ -3,6 +3,22 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Accessibility: text-size scaling ───────────────────────────────────── */
+[data-text-size="sm"] { font-size: 11px; }
+[data-text-size="md"] { font-size: 13px; }
+[data-text-size="lg"] { font-size: 15px; }
+
+/* ── Accessibility: high-contrast overrides ─────────────────────────────── */
+.high-contrast {
+  --c-outline: 0 0 0;
+  --c-on-surface: 0 0 0;
+  --c-primary: 0 0 180;
+}
+[data-theme="dark"].high-contrast {
+  --c-on-surface: 255 255 255;
+  --c-primary: 100 220 255;
+}
+
 :root {
   --map-sea: 205 229 255;
   --map-land: 255 255 255;

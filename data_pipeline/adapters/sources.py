@@ -72,7 +72,34 @@ class ERA5Adapter(LocalFileAdapter):
         if not self._cds_configured():
             raise AdapterError("CDS credentials not found (set CDSAPI_URL/CDSAPI_KEY or create ~/.cdsapirc)")
         target.parent.mkdir(parents=True, exist_ok=True)
-        cdsapi.Client().retrieve(ERA5_SINGLE_LEVELS, self.build_request(request), str(target))
+        client = cdsapi.Client(timeout=180, sleep_max=5)
+        client.retrieve(ERA5_SINGLE_LEVELS, self.build_request(request), str(target))
+
+        # CDS returns a .zip archive when requests contain mixed step types (e.g. instantaneous + accumulated)
+        import shutil
+        import tempfile
+        import zipfile
+
+        if zipfile.is_zipfile(target):
+            with tempfile.TemporaryDirectory() as tmpdir:
+                with zipfile.ZipFile(target, "r") as z:
+                    z.extractall(tmpdir)
+                nc_files = sorted(Path(tmpdir).glob("*.nc"))
+                if nc_files:
+                    datasets = [xr.open_dataset(f) for f in nc_files]
+                    try:
+                        merged = xr.merge(datasets, compat="override")
+                        tmp_out = Path(tmpdir) / "merged.nc"
+                        merged.to_netcdf(tmp_out)
+                        merged.close()
+                        for ds in datasets:
+                            ds.close()
+                        shutil.move(str(tmp_out), str(target))
+                    except Exception as err:
+                        for ds in datasets:
+                            ds.close()
+                        raise AdapterError(f"Failed to merge multi-stream CDS NetCDF files: {err}") from err
+
         return target
 
     def download_batch(self, requests: list[DatasetRequest], target_dir: Path) -> list[Path]:
@@ -85,13 +112,18 @@ class ERA5Adapter(LocalFileAdapter):
         return paths
 
     @staticmethod
-    def verify_download(path: Path) -> bool:
+    def verify_download(path: Path, expected_vars: list[str] | tuple[str, ...] | None = None) -> bool:
         """Return True if *path* is a readable NetCDF file containing expected ERA5 variables."""
+        import zipfile
+        if not path.is_file() or zipfile.is_zipfile(path):
+            return False
         try:
             import xarray as xr
 
             with xr.open_dataset(path, engine="netcdf4") as ds:
-                return all(v in ds.data_vars for v in _ERA5_CDS_NAMES.keys())
+                if expected_vars:
+                    return all(v in ds.data_vars for v in expected_vars)
+                return any(v in ds.data_vars for v in _ERA5_CDS_NAMES.keys())
         except Exception:  # noqa: BLE001
             return False
 

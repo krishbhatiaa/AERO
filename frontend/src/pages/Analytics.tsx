@@ -21,7 +21,7 @@ export function Analytics(): JSX.Element {
       <AsyncBoundary query={ds} label="downscaling evaluation">
         {(d) => (
           <>
-            <div role="note" className="rounded border border-sev-moderate/50 bg-sev-moderate/10 p-3 text-body-sm"><b>Read this first: </b>{d.caveat} Learned models evaluated: <b>{d.learned_models_evaluated.length || "none"}</b>.</div>
+            <div role="note" className="rounded border border-sev-moderate/50 bg-sev-moderate/10 p-3 text-body-sm"><b>Read this first: </b>{d.caveat} Learned models evaluated: <b>{(d.learned_models_evaluated || []).length || "none"}</b>.</div>
             <div className="grid gap-3 lg:grid-cols-2">
               <BarChart title="Peak error" description="max(pred) − max(truth). Negative = the extreme peak is smoothed away." unit="mm/6h" bars={bars(d, "peak_error")} />
               <BarChart title="P99 error" description="99th-percentile error vs synthetic truth." unit="mm/6h" digits={2} bars={bars(d, "p99_error")} />

@@ -32,21 +32,73 @@ function ringCenter(g: Geometry): [number, number] | null {
   return [(Math.min(...xs) + Math.max(...xs)) / 2, (Math.min(...ys) + Math.max(...ys)) / 2];
 }
 
+import { useUi, type Basemap } from "@/stores/ui";
+
+const BASEMAP_STYLES: Record<Basemap, { land: string; worldOpacity: number; landOpacity: number; stroke: string }> = {
+  standard: {
+    land: "rgb(var(--map-land))",
+    worldOpacity: 0.85,
+    landOpacity: 0.92,
+    stroke: "rgb(var(--c-outline))",
+  },
+  satellite: {
+    land: "#1e3322",
+    worldOpacity: 0.85,
+    landOpacity: 0.96,
+    stroke: "#38bdf8",
+  },
+  terrain: {
+    land: "#dfd5b8",
+    worldOpacity: 0.85,
+    landOpacity: 0.94,
+    stroke: "#854d0e",
+  },
+  dark: {
+    land: "#151d29",
+    worldOpacity: 0.88,
+    landOpacity: 0.98,
+    stroke: "#38bdf8",
+  },
+  nautical: {
+    land: "#efe7d3",
+    worldOpacity: 0.85,
+    landOpacity: 0.92,
+    stroke: "#0ea5e9",
+  },
+};
+
+const COUNTRY_LABEL_POSITIONS: Record<string, [number, number]> = {
+  India: [78.96, 22.00],
+  Pakistan: [69.34, 30.37],
+  Nepal: [84.12, 28.39],
+  Bhutan: [90.43, 27.51],
+  Bangladesh: [90.35, 23.68],
+  "Sri Lanka": [80.77, 7.87],
+  Myanmar: [96.68, 19.76],
+  Afghanistan: [66.02, 33.77],
+  China: [88.50, 32.20],
+  Maldives: [73.50, 4.20],
+};
+
 /** Land fill drawn beneath the rasters so land and sea are distinguishable. */
 export function WorldLandLayer({ view, size }: { view: View; size: Size }): JSX.Element {
-  const d = useMemo(() => view.zoom <= 18 ? WORLD_LAND.features.map((f) => geometryToPath(f.geometry as Geometry)).join("") : "", [view.zoom]);
+  const basemap = useUi((s) => s.basemap);
+  const cfg = BASEMAP_STYLES[basemap] || BASEMAP_STYLES.standard;
+  const d = useMemo(() => WORLD_LAND.features.map((f) => geometryToPath(f.geometry as Geometry)).join(""), []);
   return (
     <svg className="pointer-events-none absolute inset-0 h-full w-full" width={size.w} height={size.h} aria-hidden data-testid="world-land-layer">
-      <g transform={dataToScreenTransform(view, size)}><path d={d} fill="rgb(var(--map-land))" fillOpacity={0.42} stroke="rgb(var(--c-outline))" strokeOpacity={0.4} strokeWidth={0.35} /></g>
+      <g transform={dataToScreenTransform(view, size)}><path d={d} fill={cfg.land} fillOpacity={cfg.worldOpacity} stroke={cfg.stroke} strokeOpacity={0.35} strokeWidth={0.35} /></g>
     </svg>
   );
 }
 
 export function LandLayer({ view, size, countries }: { view: View; size: Size; countries?: FeatureCollection }): JSX.Element {
+  const basemap = useUi((s) => s.basemap);
+  const cfg = BASEMAP_STYLES[basemap] || BASEMAP_STYLES.standard;
   const d = useMemo(() => (countries ? countries.features.map((f) => geometryToPath(f.geometry)).join("") : ""), [countries]);
   return (
     <svg className="pointer-events-none absolute inset-0 h-full w-full" width={size.w} height={size.h} aria-hidden data-testid="land-layer">
-      <g transform={dataToScreenTransform(view, size)}><path d={d} fill="rgb(var(--map-land))" fillOpacity={0.9} stroke="none" /></g>
+      <g transform={dataToScreenTransform(view, size)}><path d={d} fill={cfg.land} fillOpacity={cfg.landOpacity} stroke="none" /></g>
     </svg>
   );
 }
@@ -72,6 +124,17 @@ export function MapOverlay({ view, size, layers, lead, countries, states, trajec
   const countriesPath = useMemo(() => (countries ? countries.features.map((f) => geometryToPath(f.geometry)).join("") : ""), [countries]);
   const statesPath = useMemo(() => (states ? states.features.map((f) => geometryToPath(f.geometry)).join("") : ""), [states]);
   const labels = useMemo(() => (states ? states.features.map((f) => ({ name: f.properties.name, c: ringCenter(f.geometry) })).filter((l): l is { name: string; c: [number, number] } => !!l.c) : []), [states]);
+  const countryLabels = useMemo(() => {
+    if (!countries) return [];
+    return countries.features
+      .map((f) => {
+        const name = (f.properties?.name || f.properties?.ADMIN) as string | undefined;
+        if (!name) return null;
+        const c = COUNTRY_LABEL_POSITIONS[name] ?? ringCenter(f.geometry);
+        return c ? { name, c } : null;
+      })
+      .filter((l): l is { name: string; c: [number, number] } => !!l);
+  }, [countries]);
   const feats = trajectory?.features ?? [];
   const by = (k: TrackFeatureProps["kind"]): Feature<TrackFeatureProps>[] => feats.filter((f) => f.properties.kind === k);
   const tracked = by("tracked")[0], extrap = by("extrapolation")[0], env = by("uncertainty_envelope")[0], members = by("ensemble_members")[0];
@@ -112,8 +175,8 @@ export function MapOverlay({ view, size, layers, lead, countries, states, trajec
   return (
     <svg className="pointer-events-none absolute inset-0 h-full w-full" width={size.w} height={size.h} aria-hidden>
       <g transform={transform} fill="none" vectorEffect="non-scaling-stroke">
-        {layers.boundaries && <path d={countriesPath} stroke="rgb(var(--c-on-surface-variant))" strokeWidth={1.1} strokeOpacity={0.9} vectorEffect="non-scaling-stroke" />}
-        {layers.boundaries && <path d={statesPath} stroke="rgb(var(--c-on-surface-variant))" strokeWidth={0.6} strokeOpacity={0.7} strokeDasharray="3 2" vectorEffect="non-scaling-stroke" />}
+        {layers.boundaries && <path d={countriesPath} stroke="rgb(var(--c-on-surface-variant))" strokeWidth={1.2} strokeOpacity={0.9} vectorEffect="non-scaling-stroke" />}
+        {layers.boundaries && <path d={statesPath} stroke="rgb(var(--c-on-surface-variant))" strokeWidth={0.65} strokeOpacity={0.65} strokeDasharray="3 2" vectorEffect="non-scaling-stroke" />}
         {layers.graticule && <path d={gLines} stroke="rgb(var(--c-outline))" strokeOpacity={0.4} strokeWidth={0.6} strokeDasharray="4 4" vectorEffect="non-scaling-stroke" />}
         {layers.impact && impact?.features.map((f) => {
           const k = f.properties.kind;
@@ -138,7 +201,54 @@ export function MapOverlay({ view, size, layers, lead, countries, states, trajec
           <text x={6} y={24} fontSize={9} className="fill-on-surface font-mono">{cur.properties.max_intensity?.toFixed(0)} mm/6h · {cur.properties.speed_kmh?.toFixed(0)} km/h</text>
         </g>); })()}
       {arrows}
-      {view.zoom > 26 && layers.boundaries && labels.map((l) => { const [x, y] = project(view, size, l.c[0], l.c[1]); if (x < 0 || y < 0 || x > size.w || y > size.h) return null; return <text key={l.name} x={x} y={y} textAnchor="middle" fontSize={10} className="fill-on-surface-variant font-medium" stroke="rgb(var(--c-surface-container-lowest))" strokeWidth={3} paintOrder="stroke" opacity={0.85}>{l.name}</text>; })}
+
+      {/* Country labels with high-legibility cartographic halo styling */}
+      {layers.boundaries && countryLabels.map((l) => {
+        const [x, y] = project(view, size, l.c[0], l.c[1]);
+        if (x < -100 || y < -50 || x > size.w + 100 || y > size.h + 50) return null;
+        const isIndia = l.name === "India";
+        return (
+          <text
+            key={`country-${l.name}`}
+            x={x}
+            y={y}
+            textAnchor="middle"
+            dominantBaseline="central"
+            fontSize={isIndia ? 13 : 11}
+            fontWeight={800}
+            letterSpacing={isIndia ? "0.22em" : "0.14em"}
+            className="fill-on-surface uppercase font-sans select-none pointer-events-none"
+            stroke="rgb(var(--c-surface-container-lowest))"
+            strokeWidth={3.8}
+            paintOrder="stroke"
+            opacity={view.zoom > 45 ? 0.35 : 0.88}
+          >
+            {l.name}
+          </text>
+        );
+      })}
+
+      {/* Indian State / Region labels at medium-to-high zoom */}
+      {view.zoom > 20 && layers.boundaries && labels.map((l) => {
+        const [x, y] = project(view, size, l.c[0], l.c[1]);
+        if (x < 0 || y < 0 || x > size.w || y > size.h) return null;
+        return (
+          <text
+            key={l.name}
+            x={x}
+            y={y}
+            textAnchor="middle"
+            fontSize={9.5}
+            className="fill-on-surface-variant font-medium select-none pointer-events-none"
+            stroke="rgb(var(--c-surface-container-lowest))"
+            strokeWidth={2.8}
+            paintOrder="stroke"
+            opacity={0.8}
+          >
+            {l.name}
+          </text>
+        );
+      })}
       {layers.graticule && lats.map((y) => <text key={`la${y}`} x={5} y={project(view, size, view.lon, y)[1] - 2} fontSize={9} className="fill-on-surface-variant font-mono" stroke="rgb(var(--c-surface-container-lowest))" strokeWidth={2.5} paintOrder="stroke">{Math.abs(y)}°{y >= 0 ? "N" : "S"}</text>)}
       {layers.graticule && lons.map((x) => <text key={`lo${x}`} x={project(view, size, x, view.lat)[0] + 3} y={size.h - 6} fontSize={9} className="fill-on-surface-variant font-mono" stroke="rgb(var(--c-surface-container-lowest))" strokeWidth={2.5} paintOrder="stroke">{Math.abs(x)}°{x >= 0 ? "E" : "W"}</text>)}
       {measure.map(([lon, lat], i) => { const [x, y] = project(view, size, lon, lat); return <circle key={i} cx={x} cy={y} r={4} fill="rgb(var(--c-primary))" stroke="white" strokeWidth={1.5} />; })}

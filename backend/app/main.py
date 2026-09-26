@@ -80,6 +80,7 @@ class RequestContextMiddleware:
 
 def create_app(settings: Settings | None = None, preloaded: RealResult | None = None) -> FastAPI:
     """Build the application. ``preloaded`` lets tests inject a pipeline result instead of recomputing it."""
+    get_settings.cache_clear()
     s = settings or get_settings()
     configure_logging(s.log_level, fmt=s.log_format, log_file=s.log_file)
 
@@ -168,3 +169,6 @@ def create_app(settings: Settings | None = None, preloaded: RealResult | None = 
         return Response(content=body, media_type="text/plain; version=0.0.4")
 
     return app
+
+
+app = create_app()

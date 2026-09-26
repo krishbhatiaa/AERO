@@ -209,10 +209,11 @@ class RequestTimeoutMiddleware:
         if scope["type"] != "http" or scope["method"] == "OPTIONS":
             await self.app(scope, receive, send)
             return
+        timeout = 600 if scope.get("path", "").endswith("/fetch-era5") else self.timeout
         try:
-            await asyncio.wait_for(self.app(scope, receive, send), timeout=self.timeout)
+            await asyncio.wait_for(self.app(scope, receive, send), timeout=timeout)
         except asyncio.TimeoutError:
-            resp = problem(504, "REQUEST_TIMEOUT", "Request timed out", f"Server did not respond within {self.timeout}s.")
+            resp = problem(504, "REQUEST_TIMEOUT", "Request timed out", f"Server did not respond within {timeout}s.")
             await resp(scope, receive, send)
 
 

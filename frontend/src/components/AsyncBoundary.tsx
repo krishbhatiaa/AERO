@@ -29,8 +29,11 @@ interface Props<T> {
   className?: string;
 }
 
-/** Renders the six UI states: loading | success | empty | partial | error | offline. */
+import { useState } from "react";
+
+// inside AsyncBoundary:
 export function AsyncBoundary<T>({ query, label, children, isEmpty, emptyText, partialNote, skeleton, className }: Props<T>): JSX.Element {
+  const [dismissed, setDismissed] = useState(false);
   const state = deriveState(query, isEmpty, !!partialNote);
   const err = query.error instanceof ApiClientError ? query.error : null;
   return (
@@ -66,7 +69,22 @@ export function AsyncBoundary<T>({ query, label, children, isEmpty, emptyText, p
       )}
       {(state === "success" || state === "partial") && query.data !== undefined && (
         <>
-          {state === "partial" && <div role="note" className="mb-2 rounded border border-sev-moderate/50 bg-sev-moderate/10 px-2 py-1 text-body-xs text-on-surface">Partial data: {partialNote}</div>}
+          {state === "partial" && !dismissed && (
+            <div role="note" className="mb-1 flex items-center justify-between gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-[11px] text-amber-900 dark:text-amber-200">
+              <div className="flex items-center gap-1.5">
+                <TriangleAlert className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                <span>Partial data: {partialNote}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setDismissed(true)}
+                className="text-amber-600 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-200 p-0.5"
+                title="Dismiss"
+              >
+                ✕
+              </button>
+            </div>
+          )}
           {children(query.data)}
         </>
       )}

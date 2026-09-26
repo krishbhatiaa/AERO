@@ -59,7 +59,7 @@ class LocalFileAdapter:
         return list(request.files) if request.files else self._local_files()
 
     def open(self, request: DatasetRequest) -> xr.Dataset:
-        files = self.source_files(request)
+        files = [Path(f) for f in self.source_files(request)]
         if not files:
             raise AdapterError(f"{self.name}: no input files. {self.descriptor().message}")
         suffixes = {f.suffix.lower() for f in files}

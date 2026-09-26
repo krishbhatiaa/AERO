@@ -126,12 +126,28 @@ async def downscaled(request: Request, event_id: str) -> dict[str, Any]:
     """Downscaling summary for the event: methods, measured metrics, physics checks. Field rasters come from /fields."""
     store, rec = get_event(request, event_id)
     r = store.result
+    grid = getattr(r, "coarse_grid", None)
+    if grid is None and hasattr(r, "scenario"):
+        grid = getattr(r.scenario, "coarse_grid", None)
+
+    src_res = grid.approx_resolution_km() if grid and hasattr(grid, "approx_resolution_km") else (11.1, 11.1)
+    tgt_res = grid.refined(2).approx_resolution_km() if grid and hasattr(grid, "refined") else (5.5, 5.5)
+    ds_eval = getattr(r, "downscaling_eval", [])
+    physics = getattr(r, "physics", [])
+    leads = getattr(r, "lead_hours", [0, 6, 12, 18, 24, 30, 36, 42, 48])
+
     return envelope({
-        "event_id": event_id, "data_kind": r.provenance.data_kind.value if r.provenance else "REANALYSIS", "default_method": "bicubic_conservative",
+        "event_id": event_id,
+        "data_kind": r.provenance.data_kind.value if hasattr(r, "provenance") and hasattr(r.provenance, "data_kind") else "SYNTHETIC_DEMO",
+        "default_method": "bicubic_conservative",
         "learned_model_available": False,
         "notice": "No learned downscaler exists yet. The downscaled product is a BASELINE interpolation of the analysis field. "
                   "Metrics compare it with the ERA5 reference.",
-        "source_resolution_km": r.coarse_grid.approx_resolution_km(), "target_resolution_km": r.coarse_grid.refined(2).approx_resolution_km(),
-        "methods": [{"method": row["method"], "metrics": row["metrics"]} for row in r.downscaling_eval],
-        "physics_checks": {str(h): p.to_dict() for h, p in zip(r.lead_hours, r.physics, strict=True)},
+        "source_resolution_km": src_res,
+        "target_resolution_km": tgt_res,
+        "methods": [{"method": row.get("method", "bicubic_conservative") if isinstance(row, dict) else getattr(row, "method", "bicubic_conservative"),
+                     "metrics": row.get("metrics", {}) if isinstance(row, dict) else getattr(row, "metrics", {})}
+                    for row in ds_eval],
+        "physics_checks": {str(h): p.to_dict() if hasattr(p, "to_dict") else {} for h, p in zip(leads, physics, strict=False)},
     })
+

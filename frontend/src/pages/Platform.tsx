@@ -36,7 +36,7 @@ export function Platform(): JSX.Element {
   const best = ds.data?.methods.find((m) => m.method === "bicubic_conservative");
   const nearest = ds.data?.methods.find((m) => m.method === "nearest");
   return (
-    <div data-theme="dark" className="min-h-full bg-background text-on-surface" data-testid="platform-page">
+    <div className="min-h-full bg-background text-on-surface" data-testid="platform-page">
       <section className="relative overflow-hidden px-6 pb-16 pt-14">
         <div className="pointer-events-none absolute -top-40 left-1/2 h-[520px] w-[980px] -translate-x-1/2 bg-gradient-to-b from-primary/15 to-transparent blur-[140px]" aria-hidden />
         <div className="relative mx-auto flex max-w-6xl flex-col items-center text-center">

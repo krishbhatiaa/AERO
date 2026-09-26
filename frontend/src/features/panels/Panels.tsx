@@ -57,8 +57,8 @@ export function ExplainPanel({ eventId, lead }: { eventId: string | null; lead: 
       <AsyncBoundary query={q} label="explanation" isEmpty={() => !eventId}>
         {(d) => (
           <>
-            <dl>{d.factors.map((f) => <KV key={f.name} k={f.name} v={<span title={f.detail}>{typeof f.value === "number" ? fmt(f.value, Math.abs(f.value) < 10 ? 2 : 0) : f.value} <span className="text-on-surface-variant">{f.unit}</span></span>} />)}</dl>
-            <ul className="mt-2 list-disc space-y-0.5 pl-4 text-body-xs text-on-surface-variant">{d.notes.map((n) => <li key={n}>{n}</li>)}</ul>
+            <dl>{(d.factors || []).map((f) => <KV key={f.name} k={f.name} v={<span title={f.detail}>{typeof f.value === "number" ? fmt(f.value, Math.abs(f.value) < 10 ? 2 : 0) : f.value} <span className="text-on-surface-variant">{f.unit}</span></span>} />)}</dl>
+            <ul className="mt-2 list-disc space-y-0.5 pl-4 text-body-xs text-on-surface-variant">{(d.notes || []).map((n) => <li key={n}>{n}</li>)}</ul>
           </>
         )}
       </AsyncBoundary>
